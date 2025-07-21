@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dialpad Vendor Split</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f7fa;
+      padding: 30px;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      margin-top: 30px;
+      font-size: 18px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input[type="number"] {
+      padding: 5px;
+      width: 200px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 8px 16px;
+      background-color: #007acc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    table {
+      width: auto;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background-color: #eef3f7;
+    }
+
+    table tbody tr:nth-child(even) {
+      background-color: #f9fbfc;
+    }
+
+    table tfoot {
+      background-color: #eef3f7;
+      font-weight: bold;
+    }
+
+    details {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      padding: 10px;
+      width: fit-content;
+    }
+
+    summary {
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Dialpad Vendor Split</h2>
+  <label for="dialpad-total">Total Invoice Amount:</label>
+  <input type="number" id="dialpad-total" value="0" step="0.01">
+  <button onclick="calculateDialpad()">Calculate Allocation</button>
+  <div id="dialpad-result"></div>
+
+  <script>
+    function formatNumber(num) {
+      return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculateDialpad() {
+      const total = parseFloat(document.getElementById("dialpad-total").value);
+      if (isNaN(total)) return;
+
+      const data = [
+        { user: "Accounting", pct: 1.62, coding: "7210", dept: "Corp Ops - Finance & Accounting", class: "Unassigned Listing" },
+        { user: "Gems", pct: 58.52, coding: "7210", dept: "Guest Services - GEMs", class: "Unassigned Listing" },
+        { user: "HR", pct: 3.25, coding: "7210", dept: "Corp Ops - Legal & Risk", class: "Unassigned Listing" },
+        { user: "OPS", pct: 17.79, coding: "7210", dept: "Corp Ops - General", class: "Unassigned Listing" },
+        { user: "OSM", pct: 3.25, coding: "7210", dept: "Owner Success", class: "Unassigned Listing" },
+        { user: "Risk", pct: 1.63, coding: "7210", dept: "Corp Ops - Legal & Risk", class: "Unassigned Listing" },
+        { user: "Sales", pct: 1.63, coding: "7210", dept: "Sales & Marketing", class: "Unassigned Listing" },
+        { user: "SH5", pct: 12.31, coding: "1242", dept: "Office & Admin", class: "BKW ALL" }
+      ];
+
+      const rows = [];
+      const pivot = {};
+      let grandTotal = 0;
+
+      data.forEach(item => {
+        const amount = (total * item.pct / 100);
+        grandTotal += amount;
+        const key = `${item.coding}||${item.dept}||${item.class}`;
+
+        if (!pivot[key]) pivot[key] = 0;
+        pivot[key] += amount;
+
+        rows.push(`<tr>
+          <td>${item.user}</td>
+          <td>${item.pct.toFixed(2)}%</td>
+          <td style="text-align:right;">$${formatNumber(amount)}</td>
+          <td>${item.coding}</td>
+          <td>${item.dept}</td>
+          <td>${item.class}</td>
+        </tr>`);
+      });
+
+      const pivotRows = Object.entries(pivot).map(([key, value]) => {
+        const [coding, dept, className] = key.split("||");
+        return `<tr>
+          <td>${coding}</td>
+          <td>${dept}</td>
+          <td>${className}</td>
+          <td style="text-align:right;">$${formatNumber(value)}</td>
+        </tr>`;
+      }).join("");
+
+      const pivotTable = `
+        <div style="float: right; width: 480px; margin-top: -20px;">
+          <h3>Summary by Coding / Dept / Class</h3>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 90px;">Coding</th>
+                <th>Department</th>
+                <th>Class</th>
+                <th style="text-align:right;">Sum of Amount</th>
+              </tr>
+            </thead>
+            <tbody>${pivotRows}</tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3">Grand Total</td>
+                <td style="text-align:right; font-weight:bold;">$${formatNumber(grandTotal)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>`;
+
+      const detailedTable = `
+        <details>
+          <summary>Show Detailed Allocation</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Percentage</th>
+                <th>Amount</th>
+                <th>Coding</th>
+                <th>Department</th>
+                <th>Class</th>
+              </tr>
+            </thead>
+            <tbody>${rows.join("")}</tbody>
+          </table>
+        </details>`;
+
+      document.getElementById("dialpad-result").innerHTML = pivotTable + detailedTable;
+    }
+  </script>
+</body>
+</html>
