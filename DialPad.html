@@ -50,23 +50,6 @@
       background-color: #005b99;
     }
 
-    .results-container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      margin-top: 30px;
-    }
-
-    @media (min-width: 900px) {
-      .results-container {
-        flex-direction: row;
-      }
-
-      .details, .summary {
-        flex: 1;
-      }
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
@@ -92,6 +75,11 @@
       font-weight: bold;
       cursor: pointer;
       margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    details {
+      margin-top: 20px;
     }
 
     .back-btn {
@@ -130,7 +118,7 @@
         { user: "SH5", pct: 12.31, coding: "1242", dept: "Office & Admin", class: "BKW ALL" }
       ];
 
-      const rows = [];
+      const detailRows = [];
       const pivot = {};
       let grandTotal = 0;
 
@@ -144,7 +132,7 @@
         }
         pivot[key] += amount;
 
-        rows.push(`<tr>
+        detailRows.push(`<tr>
           <td>${item.user}</td>
           <td>${item.pct.toFixed(2)}%</td>
           <td>$${formatNumber(amount)}</td>
@@ -165,46 +153,43 @@
       }).join("");
 
       const output = `
-        <div class="results-container">
-          <div class="details">
-            <details open>
-              <summary>Show Detailed Allocation</summary>
-              <table>
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Percentage</th>
-                    <th>Amount</th>
-                    <th>Coding</th>
-                    <th>Department</th>
-                    <th>Class</th>
-                  </tr>
-                </thead>
-                <tbody>${rows.join("")}</tbody>
-              </table>
-            </details>
-          </div>
-          <div class="summary">
-            <h3>Summary by Coding / Dept / Class</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Coding</th>
-                  <th>Department</th>
-                  <th>Class</th>
-                  <th style="text-align:right;">Sum of Amount</th>
-                </tr>
-              </thead>
-              <tbody>${pivotRows}</tbody>
-              <tfoot>
-                <tr>
-                  <td colspan="3">Grand Total</td>
-                  <td style="text-align:right;">$${formatNumber(grandTotal)}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>`;
+        <details open>
+          <summary>Summary by Coding / Dept / Class</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>Coding</th>
+                <th>Department</th>
+                <th>Class</th>
+                <th style="text-align:right;">Sum of Amount</th>
+              </tr>
+            </thead>
+            <tbody>${pivotRows}</tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3">Grand Total</td>
+                <td style="text-align:right;">$${formatNumber(grandTotal)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </details>
+
+        <details>
+          <summary>Show Detailed Allocation</summary>
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Percentage</th>
+                <th>Amount</th>
+                <th>Coding</th>
+                <th>Department</th>
+                <th>Class</th>
+              </tr>
+            </thead>
+            <tbody>${detailRows.join("")}</tbody>
+          </table>
+        </details>`;
 
       document.getElementById("dialpad-result").innerHTML = output;
     }
